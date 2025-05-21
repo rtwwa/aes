@@ -57,30 +57,33 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("token");
     } finally {
       setLoading(false);
-    }  };
+    }
+  };
 
   const login = async (email, password) => {
     try {
-      console.log('Attempting login with:', { email });
+      console.log("Attempting login with:", { email });
       const response = await axios.post("/api/auth/login", { email, password });
-      console.log('Login response:', response.data);
+      console.log("Login response:", response.data);
       const { token, user } = response.data;
-      
+
       if (!token || !user) {
         throw new Error("Invalid server response - missing token or user data");
       }
-      
+
       localStorage.setItem("token", token);
       setUser(user);
       navigate("/");
       return true;
     } catch (error) {
-      console.error('Login error:', error.response?.data || error.message);
-      
+      console.error("Login error:", error.response?.data || error.message);
+
       if (error.response?.status === 401) {
         throw new Error("Invalid email or password");
       } else if (error.response?.status === 400) {
-        throw new Error(error.response.data.errors?.[0]?.msg || "Invalid input");
+        throw new Error(
+          error.response.data.errors?.[0]?.msg || "Invalid input"
+        );
       } else {
         throw new Error("An error occurred during login. Please try again");
       }

@@ -44,7 +44,8 @@ const Login = () => {
             <div>
               <label htmlFor="email" className="sr-only">
                 Email
-              </label>              <input
+              </label>{" "}
+              <input
                 id="email"
                 name="email"
                 type="email"
