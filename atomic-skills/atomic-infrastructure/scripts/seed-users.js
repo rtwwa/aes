@@ -1,15 +1,19 @@
 const mongoose = require("mongoose");
 const config = require("../config");
 const User = require("../database/models/User");
+const Test = require("../database/models/Test");
+const TestAssignment = require("../database/models/TestAssignment");
 
 const seedUsers = async () => {
   try {
     await mongoose.connect(config.mongoURI);
     console.log("Connected to MongoDB");
 
-    // Clear existing users
+    // Clear existing data
     await User.deleteMany({});
-    console.log("Cleared existing users");
+    await Test.deleteMany({});
+    await TestAssignment.deleteMany({});
+    console.log("Cleared existing data");
 
     // Create admin user
     const admin = await User.create({
@@ -36,6 +40,41 @@ const seedUsers = async () => {
       role: "employee",
     });
     console.log("Created employee user:", employee.email);
+
+    // Create a test
+    const test = await Test.create({
+      title: "Базовые знания о ядерной безопасности",
+      description: "Тест на проверку базовых знаний о ядерной безопасности",
+      category: "safety",
+      skillLevel: "beginner",
+      duration: 30,
+      passingScore: 70,
+      createdBy: admin._id,
+      questions: [
+        {
+          type: "multiple_choice",
+          text: "Что такое ядерная безопасность?",
+          options: [
+            { text: "Защита от радиации", isCorrect: false },
+            {
+              text: "Комплекс мер по обеспечению безопасной работы АЭС",
+              isCorrect: true,
+            },
+            { text: "Система охраны АЭС", isCorrect: false },
+          ],
+          maxScore: 1,
+        },
+      ],
+    });
+
+    // Assign test to employee
+    await TestAssignment.create({
+      testId: test._id,
+      assignedBy: admin._id,
+      assignedTo: [employee._id],
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      status: "pending",
+    });
 
     console.log("Database seeding completed successfully");
     process.exit(0);

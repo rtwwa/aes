@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const config = require("../config");
 const User = require("../database/models/User");
 const Skill = require("../database/models/Skill");
+const DEPARTMENTS = require("../config/departments");
 
 const seedDatabase = async () => {
   try {
@@ -17,11 +18,21 @@ const seedDatabase = async () => {
       firstName: "Админ",
       lastName: "Системы",
       email: "admin@aes.com",
-      password: "admin123", // Will be hashed by the User model's pre-save hook
-      department: "IT",
-      position: "System Administrator",
+      password: await bcrypt.hash("admin123", 10),
+      department: "training", // Учебно-тренировочный центр
+      position: "Главный администратор",
       role: "admin",
     });
+
+    console.log("Created admin user:");
+    console.log(`Email: admin@aes.com`);
+    console.log(`Password: admin123`);
+    console.log(
+      `Department: ${DEPARTMENTS.find((d) => d.id === "training").name}`
+    );
+
+    // Запуск сидирования отделов
+    require("./seed-departments");
 
     const employee = await User.create({
       employeeId: "EMP001",

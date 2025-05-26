@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "@core/utils/axios";
 import { useAuth } from "@core/hooks/useAuth";
 import {
   CheckCircleIcon,
@@ -34,9 +34,7 @@ const AssessmentList = () => {
           user.role === "supervisor"
             ? "/api/assessments/pending"
             : "/api/assessments/user";
-        const response = await axios.get(endpoint, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const response = await axios.get(endpoint);
         setAssessments(response.data);
       } catch (err) {
         setError("Ошибка при загрузке данных");

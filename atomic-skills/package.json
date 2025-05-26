@@ -8,6 +8,7 @@
     "client": "webpack serve --mode development --open",
     "build": "webpack --mode production",
     "seed": "node atomic-infrastructure/scripts/seed.js",
+    "seed:departments": "node atomic-infrastructure/scripts/seed-departments.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

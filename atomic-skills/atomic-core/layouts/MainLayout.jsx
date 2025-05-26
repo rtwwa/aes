@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Outlet,
+  Link,
+  useLocation,
+  useNavigate,
+  Navigate,
+} from "react-router-dom";
 import { useAuth } from "@core/hooks/useAuth";
 import {
   HomeIcon,
@@ -7,29 +13,52 @@ import {
   ClipboardDocumentCheckIcon,
   ChartBarIcon,
   UserCircleIcon,
+  PencilSquareIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 
-const navigation = [
-  { name: "Панель управления", href: "/", icon: HomeIcon },
-  { name: "Матрица навыков", href: "/skills", icon: AcademicCapIcon },
-  {
-    name: "Проверка знаний",
-    href: "/assessments",
-    icon: ClipboardDocumentCheckIcon,
-  },
-  { name: "Отчеты", href: "/reports", icon: ChartBarIcon },
-];
+const navigation = (role) =>
+  [
+    {
+      name: "Мои тесты",
+      href: "/my-tests",
+      icon: DocumentTextIcon,
+    },
+    {
+      name: "Управление тестами",
+      href: "/tests",
+      icon: ClipboardDocumentCheckIcon,
+      adminOnly: true,
+    },
+    {
+      name: "Управление пользователями",
+      href: "/users",
+      icon: UserCircleIcon,
+      adminOnly: true,
+    },
+    role === "admin" && {
+      name: "Прогресс сотрудников",
+      href: "/user-progress",
+      icon: ChartBarIcon,
+    },
+  ].filter(Boolean);
 
 export const Layout = () => {
   const { user, logout, loading } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
-  }, [loading, user, navigate]);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-sm">
@@ -40,20 +69,22 @@ export const Layout = () => {
                 <span className="text-2xl font-bold text-gray-900">AES</span>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                      location.pathname === item.href
-                        ? "border-b-2 border-primary-500 text-gray-900"
-                        : "text-gray-500 hover:border-b-2 hover:border-gray-300 hover:text-gray-700"
-                    }`}
-                  >
-                    <item.icon className="mr-2 h-5 w-5" />
-                    {item.name}
-                  </Link>
-                ))}
+                {navigation(user.role)
+                  .filter((item) => !item.adminOnly || user?.role === "admin")
+                  .map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                        location.pathname === item.href
+                          ? "border-b-2 border-primary-500 text-gray-900"
+                          : "text-gray-500 hover:border-b-2 hover:border-gray-300 hover:text-gray-700"
+                      }`}
+                    >
+                      <item.icon className="mr-2 h-5 w-5" />
+                      {item.name}
+                    </Link>
+                  ))}
               </div>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">

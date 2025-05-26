@@ -2,6 +2,7 @@ const express = require("express");
 const { auth } = require("../../middleware/auth");
 const Assessment = require("../../database/models/Assessment");
 const Skill = require("../../database/models/Skill");
+const TestResult = require("../../database/models/TestResult");
 
 const router = express.Router();
 
@@ -22,6 +23,12 @@ router.get("/", auth, async (req, res) => {
     const pendingAssessments = await Assessment.countDocuments({
       employee: req.user._id,
       status: "pending",
+    });
+
+    // Get completed tests count
+    const completedTests = await TestResult.countDocuments({
+      userId: req.user._id,
+      passed: true,
     });
 
     // Get recent activities
@@ -48,6 +55,7 @@ router.get("/", auth, async (req, res) => {
       totalSkills,
       completedSkills,
       pendingAssessments,
+      completedTests,
       recentActivities: activities,
     });
   } catch (error) {

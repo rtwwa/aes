@@ -9,13 +9,23 @@ const authRoutes = require("./routes/auth");
 const skillsRoutes = require("./routes/skills");
 const assessmentsRoutes = require("./routes/assessments");
 const dashboardRoutes = require("./routes/dashboard");
+const usersRoutes = require("./routes/users");
+const testsRoutes = require("./routes/tests");
+const certificatesRoutes = require("./routes/certificates");
 
 dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Настройка CORS
+app.use(
+  cors({
+    origin: "http://localhost:8080", // Точный origin вместо wildcard
+    credentials: true, // Разрешаем credentials
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 // Request logging middleware
@@ -26,6 +36,27 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// Database connection
+mongoose
+  .connect(
+    process.env.MONGODB_URI || "mongodb://localhost:27017/atomic-skills",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
+
+// API Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/skills", skillsRoutes);
+app.use("/api/assessments", assessmentsRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api/tests", testsRoutes);
+app.use("/api/certificates", certificatesRoutes);
 
 // Add body parsing error handler
 app.use((err, req, res, next) => {
@@ -47,24 +78,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Database connection
-mongoose
-  .connect(
-    process.env.MONGODB_URI || "mongodb://localhost:27017/atomic-skills",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
-
-// API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/skills", skillsRoutes);
-app.use("/api/assessments", assessmentsRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-
 // Serve static files in production
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../../../public")));
@@ -73,7 +86,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

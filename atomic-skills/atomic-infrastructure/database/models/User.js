@@ -59,14 +59,6 @@ userSchema.pre("save", async function (next) {
   } catch (error) {
     next(error);
   }
-
-  try {
-    this.password = await bcrypt.hash(this.password, 12);
-    next();
-  } catch (error) {
-    console.error("Error hashing password:", error);
-    next(error);
-  }
 });
 
 // Compare password method

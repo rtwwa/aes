@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@core/hooks/useAuth";
-import axios from "axios";
+import axios from "@core/utils/axios";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -8,16 +8,21 @@ const Dashboard = () => {
     totalSkills: 0,
     completedSkills: 0,
     pendingAssessments: 0,
+    completedTests: 0,
     recentActivities: [],
   });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await axios.get("/api/dashboard", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        const [dashboardResponse, testsResponse] = await Promise.all([
+          axios.get("/api/dashboard"),
+          axios.get("/api/tests/completed-count"),
+        ]);
+        setStats({
+          ...dashboardResponse.data,
+          completedTests: testsResponse.data.completedCount,
         });
-        setStats(response.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       }
@@ -72,6 +77,20 @@ const Dashboard = () => {
             <dd className="mt-1 flex items-baseline justify-between md:block lg:flex">
               <div className="flex items-baseline text-2xl font-semibold text-yellow-600">
                 {stats.pendingAssessments}
+              </div>
+            </dd>
+          </div>
+        </div>
+
+        {/* Пройденные тесты */}
+        <div className="card">
+          <div className="p-5">
+            <dt className="text-base font-normal text-gray-900">
+              Пройденные тесты
+            </dt>
+            <dd className="mt-1 flex items-baseline justify-between md:block lg:flex">
+              <div className="flex items-baseline text-2xl font-semibold text-blue-600">
+                {stats.completedTests}
               </div>
             </dd>
           </div>
